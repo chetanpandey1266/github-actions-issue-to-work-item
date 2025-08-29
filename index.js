@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import * as ado from './ado.js';
+// import * as ado from './ado.js';
 
 async function main() {
 	const payload = github.context.payload;
@@ -10,71 +10,72 @@ async function main() {
 	// If not the correct labelling, quit
 	if (payload.action === 'labeled') {
 		await handleLabeled(payload);
-	} else if (payload.action === 'closed' || payload.action === 'reopened') {
-		await handleIssue(payload);
-	} else {
-		console.log(`Action was not expected for payload.action = ${payload.action}. Nothing to do. Exiting.`);
-		return;
-	}
+	} 
+	// else if (payload.action === 'closed' || payload.action === 'reopened') {
+	// 	await handleIssue(payload);
+	// } else {
+	// 	console.log(`Action was not expected for payload.action = ${payload.action}. Nothing to do. Exiting.`);
+	// 	return;
+	// }
 }
 
-async function handleIssue(payload) {
-	let adoIdFromIssue = await findAdoIdFromIssue(payload.issue.body);
-	if (adoIdFromIssue == -1) {
-		console.log("No corresponding ADO id found in GitHub issue body.");
-		console.log("Exiting.");
-		return;
-	} else {
-		console.log("Found existing ADO id in GitHub issue body: " + adoIdFromIssue);
-	}
+// async function handleIssue(payload) {
+// 	let adoIdFromIssue = await findAdoIdFromIssue(payload.issue.body);
+// 	if (adoIdFromIssue == -1) {
+// 		console.log("No corresponding ADO id found in GitHub issue body.");
+// 		console.log("Exiting.");
+// 		return;
+// 	} else {
+// 		console.log("Found existing ADO id in GitHub issue body: " + adoIdFromIssue);
+// 	}
 
-	let adoWorkItem = await ado.getWorkItem(adoIdFromIssue);
-	if (!adoWorkItem) {
-		console.log("Couldn't get ADO work item with id: " + adoIdFromIssue);
-		core.setFailed();
-		return;
-	}
+// 	let adoWorkItem = await ado.getWorkItem(adoIdFromIssue);
+// 	if (!adoWorkItem) {
+// 		console.log("Couldn't get ADO work item with id: " + adoIdFromIssue);
+// 		core.setFailed();
+// 		return;
+// 	}
 
-	// Get the current tags from the work item
-	let tags = adoWorkItem.fields["System.Tags"] ?? [];
-	let closed_tag = core.getInput("ado_gh_closed_tag") ?? "GitHub_Closed";
-	console.log("Closed tag: " + closed_tag);
+// 	// Get the current tags from the work item
+// 	let tags = adoWorkItem.fields["System.Tags"] ?? [];
+// 	let closed_tag = core.getInput("ado_gh_closed_tag") ?? "GitHub_Closed";
+// 	console.log("Closed tag: " + closed_tag);
 
-	if (payload.action === 'reopened') {
-		// Remove the 'WV2_Closed' tag
-		console.log("Issue was reopened. Removing the " + closed_tag + " tag.");
-		tags = tags.replace(closed_tag, '');
-	} else if (payload.action === 'closed') {
-		// Add the 'WV2_Closed' tag
-		if (!tags.includes(closed_tag)) {
-			console.log("Issue was closed. Adding the " + closed_tag + " tag.");
-			tags = tags + ';' + closed_tag;
-		} else {
-			console.log("Issue was closed, but the " + closed_tag + " tag was already present. Nothing to do.");
-			return;
-		}
-	} else {
-		console.log(`Action was not expected for payload.action = ${payload.action}. Nothing to do. Exiting.`);
-		core.setFailed();
-		return;
-	}
+// 	if (payload.action === 'reopened') {
+// 		// Remove the 'WV2_Closed' tag
+// 		console.log("Issue was reopened. Removing the " + closed_tag + " tag.");
+// 		tags = tags.replace(closed_tag, '');
+// 	} else if (payload.action === 'closed') {
+// 		// Add the 'WV2_Closed' tag
+// 		if (!tags.includes(closed_tag)) {
+// 			console.log("Issue was closed. Adding the " + closed_tag + " tag.");
+// 			tags = tags + ';' + closed_tag;
+// 		} else {
+// 			console.log("Issue was closed, but the " + closed_tag + " tag was already present. Nothing to do.");
+// 			return;
+// 		}
+// 	} else {
+// 		console.log(`Action was not expected for payload.action = ${payload.action}. Nothing to do. Exiting.`);
+// 		core.setFailed();
+// 		return;
+// 	}
 
-	const patchDocument = [
-		{
-			op: "replace", // 'add' patch operation on an existing work item field replaces the value
-			path: "/fields/System.Tags",
-			value: tags,
-		}
-	];
+// 	const patchDocument = [
+// 		{
+// 			op: "replace", // 'add' patch operation on an existing work item field replaces the value
+// 			path: "/fields/System.Tags",
+// 			value: tags,
+// 		}
+// 	];
 
-	console.log("Updating tags on ADO work item with tags: " + tags);
-	let updateResult = await ado.updateWorkItem(adoIdFromIssue, patchDocument);
-	if (!updateResult) {
-		console.log("Couldn't update ADO work item with id: " + adoIdFromIssue);
-		core.setFailed();
-		return;
-	}
-}
+// 	console.log("Updating tags on ADO work item with tags: " + tags);
+// 	let updateResult = await ado.updateWorkItem(adoIdFromIssue, patchDocument);
+// 	if (!updateResult) {
+// 		console.log("Couldn't update ADO work item with id: " + adoIdFromIssue);
+// 		core.setFailed();
+// 		return;
+// 	}
+// }
 
 async function handleLabeled(payload) {
 	// We will only handle labeled events if the label matches the 'label' input filter.
@@ -129,227 +130,227 @@ async function handleLabeled(payload) {
 	// }
 }
 
-function formatTitle(githubIssue) {
-	return "[GitHub #" + githubIssue.number + "] " + githubIssue.title;
-}
+// function formatTitle(githubIssue) {
+// 	return "[GitHub #" + githubIssue.number + "] " + githubIssue.title;
+// }
 
-async function formatDescription(payload) {
-	console.log('Creating a description based on the github issue');
-	const octokit = new github.GitHub(process.env.github_token);
-	const bodyWithMarkdown = await octokit.markdown.render({
-		text: payload.issue.body ?? "",
-		mode: 'gfm',
-		context: payload.repository.full_name
-	});
+// async function formatDescription(payload) {
+// 	console.log('Creating a description based on the github issue');
+// 	const octokit = new github.GitHub(process.env.github_token);
+// 	const bodyWithMarkdown = await octokit.markdown.render({
+// 		text: payload.issue.body ?? "",
+// 		mode: 'gfm',
+// 		context: payload.repository.full_name
+// 	});
 
-	return '________________________________________________________<br>' +
-		'<em>This item was auto-opened from GitHub <a href="' +
-		payload.issue.html_url +
-		'" target="_new">issue #' +
-		payload.issue.number +
-		"</a></em><br>" +
-		"It won't auto-update when the GitHub issue changes so please check the issue for updates.<br><br>" +
-		"<strong>Initial description from GitHub (check issue for more info):</strong><br><br>" +
-		bodyWithMarkdown.data;
-}
+// 	return '________________________________________________________<br>' +
+// 		'<em>This item was auto-opened from GitHub <a href="' +
+// 		payload.issue.html_url +
+// 		'" target="_new">issue #' +
+// 		payload.issue.number +
+// 		"</a></em><br>" +
+// 		"It won't auto-update when the GitHub issue changes so please check the issue for updates.<br><br>" +
+// 		"<strong>Initial description from GitHub (check issue for more info):</strong><br><br>" +
+// 		bodyWithMarkdown.data;
+// }
 
-async function createAdoWorkItem(payload) {
-	const botMessage = await formatDescription(payload);
-	const shortRepoName = payload.repository.full_name.split("/")[1];
-	let tags = core.getInput("ado_tags") ? core.getInput("ado_tags") + ";" + shortRepoName : shortRepoName;
-	const isFeature = payload.issue.labels.some((label) => label.name === 'enhancement' || label.name === 'feature' || label.name === 'feature request');
-	let title = formatTitle(payload.issue);
-	let priority = null;
+// async function createAdoWorkItem(payload) {
+// 	const botMessage = await formatDescription(payload);
+// 	const shortRepoName = payload.repository.full_name.split("/")[1];
+// 	let tags = core.getInput("ado_tags") ? core.getInput("ado_tags") + ";" + shortRepoName : shortRepoName;
+// 	const isFeature = payload.issue.labels.some((label) => label.name === 'enhancement' || label.name === 'feature' || label.name === 'feature request');
+// 	let title = formatTitle(payload.issue);
+// 	let priority = null;
 	
-	// If this was tagged as a privacy issue, add the "WV2_Privacy" tag and mark it as a Priority 0 bug.
-	const isPrivacy = payload.issue.labels.some((label) => label.name === 'privacy');
-	if (isPrivacy) {
-		tags += ";WV2_Privacy";
-		title = "[Privacy]" + title;
-		priority = 0;
-	}
+// 	// If this was tagged as a privacy issue, add the "WV2_Privacy" tag and mark it as a Priority 0 bug.
+// 	const isPrivacy = payload.issue.labels.some((label) => label.name === 'privacy');
+// 	if (isPrivacy) {
+// 		tags += ";WV2_Privacy";
+// 		title = "[Privacy]" + title;
+// 		priority = 0;
+// 	}
 
-	// If this was tagged as a regression issue, add the "WV2_Regression" tag and mark it as a Priority 0 bug.
-	const isRegression = payload.issue.labels.some((label) => label.name === 'regression');
-	if (isRegression) {
-		tags += ";WV2_Regression";
-		title = "[Regression]" + title;
-		priority = 0;
-	}
+// 	// If this was tagged as a regression issue, add the "WV2_Regression" tag and mark it as a Priority 0 bug.
+// 	const isRegression = payload.issue.labels.some((label) => label.name === 'regression');
+// 	if (isRegression) {
+// 		tags += ";WV2_Regression";
+// 		title = "[Regression]" + title;
+// 		priority = 0;
+// 	}
 
-	console.log(`Starting to create work item for GitHub issue #${payload.issue.number}`);
+// 	console.log(`Starting to create work item for GitHub issue #${payload.issue.number}`);
 
-	const patchDocument = [
-		{
-			op: "add",
-			path: "/fields/System.Title",
-			value: title,
-		},
-		{
-			op: "add",
-			path: "/fields/System.Description",
-			value: botMessage,
-		},
-		{
-			op: "add",
-			path: "/fields/Microsoft.VSTS.TCM.ReproSteps",
-			value: botMessage,
-		},
-		{
-			op: "add",
-			path: "/fields/System.Tags",
-			value: tags,
-		},
-		{
-			op: "add",
-			path: "/relations/-",
-			value: {
-				rel: "Hyperlink",
-				url: payload.issue.html_url,
-			},
-		},
-		{
-			// Add this to avoid false positives in secret scanning from the
-			// way image links are created in GH.
-			op: "add",
-			path: "/fields/System.History",
-			value: "**BYPASS_SECRET_SCANNING**"
-		 }
-	];
+// 	const patchDocument = [
+// 		{
+// 			op: "add",
+// 			path: "/fields/System.Title",
+// 			value: title,
+// 		},
+// 		{
+// 			op: "add",
+// 			path: "/fields/System.Description",
+// 			value: botMessage,
+// 		},
+// 		{
+// 			op: "add",
+// 			path: "/fields/Microsoft.VSTS.TCM.ReproSteps",
+// 			value: botMessage,
+// 		},
+// 		{
+// 			op: "add",
+// 			path: "/fields/System.Tags",
+// 			value: tags,
+// 		},
+// 		{
+// 			op: "add",
+// 			path: "/relations/-",
+// 			value: {
+// 				rel: "Hyperlink",
+// 				url: payload.issue.html_url,
+// 			},
+// 		},
+// 		{
+// 			// Add this to avoid false positives in secret scanning from the
+// 			// way image links are created in GH.
+// 			op: "add",
+// 			path: "/fields/System.History",
+// 			value: "**BYPASS_SECRET_SCANNING**"
+// 		 }
+// 	];
 
-	if (core.getInput('parent_work_item')) {
-		let parentUrl = "https://dev.azure.com/" + core.getInput('ado_organization');
-		parentUrl += '/_workitems/edit/' + core.getInput('parent_work_item');
+// 	if (core.getInput('parent_work_item')) {
+// 		let parentUrl = "https://dev.azure.com/" + core.getInput('ado_organization');
+// 		parentUrl += '/_workitems/edit/' + core.getInput('parent_work_item');
 
-		patchDocument.push({
-			op: "add",
-			path: "/relations/-",
-			value: {
-				rel: "System.LinkTypes.Hierarchy-Reverse",
-				url: parentUrl,
-				attributes: {
-					comment: ""
-				}
-			}
-		});
-	}
+// 		patchDocument.push({
+// 			op: "add",
+// 			path: "/relations/-",
+// 			value: {
+// 				rel: "System.LinkTypes.Hierarchy-Reverse",
+// 				url: parentUrl,
+// 				attributes: {
+// 					comment: ""
+// 				}
+// 			}
+// 		});
+// 	}
 
-	if (priority != null) {
-		patchDocument.push({
-			op: "add",
-			path: "/fields/Microsoft.VSTS.Common.Priority",
-			value: priority,
-		});
-	}
+// 	if (priority != null) {
+// 		patchDocument.push({
+// 			op: "add",
+// 			path: "/fields/Microsoft.VSTS.Common.Priority",
+// 			value: priority,
+// 		});
+// 	}
 
-	patchDocument.push({
-		op: "add",
-		path: "/fields/System.AreaPath",
-		value: core.getInput('ado_area_path'),
-	});
+// 	patchDocument.push({
+// 		op: "add",
+// 		path: "/fields/System.AreaPath",
+// 		value: core.getInput('ado_area_path'),
+// 	});
 
-	let workItemSaveResult = null;
+// 	let workItemSaveResult = null;
 
-	try {
-		console.log('Creating work item');
-		const workItemType = isFeature ? 'Scenario' : 'Bug';
-		workItemSaveResult = await ado.createWorkItem(workItemType, patchDocument);
+// 	try {
+// 		console.log('Creating work item');
+// 		const workItemType = isFeature ? 'Scenario' : 'Bug';
+// 		workItemSaveResult = await ado.createWorkItem(workItemType, patchDocument);
 
-		// if result is null, save did not complete correctly
-		if (workItemSaveResult == null) {
-			workItemSaveResult = -1;
+// 		// if result is null, save did not complete correctly
+// 		if (workItemSaveResult == null) {
+// 			workItemSaveResult = -1;
 
-			console.log("Error: createWorkItem failed");
-			console.log(`WIT may not be correct: ${wit}`);
-			core.setFailed();
-		} else {
-			console.log("Work item successfully created");
-		}
-	} catch (error) {
-		workItemSaveResult = -1;
+// 			console.log("Error: createWorkItem failed");
+// 			console.log(`WIT may not be correct: ${wit}`);
+// 			core.setFailed();
+// 		} else {
+// 			console.log("Work item successfully created");
+// 		}
+// 	} catch (error) {
+// 		workItemSaveResult = -1;
 
-		console.log("Error: createWorkItem failed");
-		console.log(patchDocument);
-		console.log(error);
-		core.setFailed(error);
-	}
+// 		console.log("Error: createWorkItem failed");
+// 		console.log(patchDocument);
+// 		console.log(error);
+// 		core.setFailed(error);
+// 	}
 
-	if (workItemSaveResult != -1) {
-		console.log(workItemSaveResult);
-	}
+// 	if (workItemSaveResult != -1) {
+// 		console.log(workItemSaveResult);
+// 	}
 
-	return workItemSaveResult;
-}
+// 	return workItemSaveResult;
+// }
 
-async function findAdoIdFromAdo(ghIssueId) {
-	console.log('Connecting to Azure DevOps to find work item for issue #' + ghIssueId);
+// async function findAdoIdFromAdo(ghIssueId) {
+// 	console.log('Connecting to Azure DevOps to find work item for issue #' + ghIssueId);
 
-	const wiql = {
-		query:
-			`SELECT [System.Id] FROM workitems 
-			WHERE
-				[System.TeamProject] = @project AND
-				[System.AreaPath] = '${core.getInput('ado_area_path')}' AND
-				[System.Title] CONTAINS 'GitHub #' AND
-				[System.Title] CONTAINS '${ghIssueId}'`
-	};
-	console.log("ADO query: " + wiql.query);
+// 	const wiql = {
+// 		query:
+// 			`SELECT [System.Id] FROM workitems 
+// 			WHERE
+// 				[System.TeamProject] = @project AND
+// 				[System.AreaPath] = '${core.getInput('ado_area_path')}' AND
+// 				[System.Title] CONTAINS 'GitHub #' AND
+// 				[System.Title] CONTAINS '${ghIssueId}'`
+// 	};
+// 	console.log("ADO query: " + wiql.query);
 
-	let queryResult = null;
-	try {
-		queryResult = await ado.queryByWiql(wiql, { project: core.getInput('ado_project') });
+// 	let queryResult = null;
+// 	try {
+// 		queryResult = await ado.queryByWiql(wiql, { project: core.getInput('ado_project') });
 
-		// if query results = null then i think we have issue with the project name
-		if (queryResult == null) {
-			console.log("Error: Project name appears to be invalid");
-			core.setFailed("Error: Project name appears to be invalid");
-			return -1;
-		}
-	} catch (error) {
-		console.log("Error: queryByWiql failure");
-		console.log(error);
-		core.setFailed(error);
-		return -1;
-	}
-	console.log("Query result: " + queryResult);
+// 		// if query results = null then i think we have issue with the project name
+// 		if (queryResult == null) {
+// 			console.log("Error: Project name appears to be invalid");
+// 			core.setFailed("Error: Project name appears to be invalid");
+// 			return -1;
+// 		}
+// 	} catch (error) {
+// 		console.log("Error: queryByWiql failure");
+// 		console.log(error);
+// 		core.setFailed(error);
+// 		return -1;
+// 	}
+// 	console.log("Query result: " + queryResult);
 
-	console.log("Use the first item found");
-	const workItem = queryResult.workItems.length > 0 ? queryResult.workItems[0] : null;
+// 	console.log("Use the first item found");
+// 	const workItem = queryResult.workItems.length > 0 ? queryResult.workItems[0] : null;
 
-	if (workItem != null) {
-		console.log("Workitem data retrieved: " + workItem.id);
-		return workItem.id;
-	} else {
-		console.log("No workitem found for this GitHub issue, return -1");
-		return -1;
-	}
-}
+// 	if (workItem != null) {
+// 		console.log("Workitem data retrieved: " + workItem.id);
+// 		return workItem.id;
+// 	} else {
+// 		console.log("No workitem found for this GitHub issue, return -1");
+// 		return -1;
+// 	}
+// }
 
-/**
- * Given a GitHub issue, return the ADO work item id that corresponds to it, or -1 if not found.
- * 
- * @param {string} issueBody the GitHub issue body.
- * @returns {number} The corresponding ADO work item id, if any was found, or -1.
- */
- async function findAdoIdFromIssue(issueBody) {
-    // We expect our GitHub issues to contain the ADO number in the issue body.
-    // The ADO number should be in the format "AB#12345".
-    // The logic below will extract the last instance of this format in the issue body.
+// /**
+//  * Given a GitHub issue, return the ADO work item id that corresponds to it, or -1 if not found.
+//  * 
+//  * @param {string} issueBody the GitHub issue body.
+//  * @returns {number} The corresponding ADO work item id, if any was found, or -1.
+//  */
+//  async function findAdoIdFromIssue(issueBody) {
+//     // We expect our GitHub issues to contain the ADO number in the issue body.
+//     // The ADO number should be in the format "AB#12345".
+//     // The logic below will extract the last instance of this format in the issue body.
 
-	console.log("Looking for ADO link in issue body");
-	if (!issueBody) {
-		console.log("No issue body found.");
-		return -1;
-	}
-    const matches = issueBody.matchAll(/AB#([0-9]+)/g);
-    const lastRef = [...matches].pop();
-    if (!lastRef) {
-        console.log("No ADO link found in issue body.");
-        return -1;
-    }
+// 	console.log("Looking for ADO link in issue body");
+// 	if (!issueBody) {
+// 		console.log("No issue body found.");
+// 		return -1;
+// 	}
+//     const matches = issueBody.matchAll(/AB#([0-9]+)/g);
+//     const lastRef = [...matches].pop();
+//     if (!lastRef) {
+//         console.log("No ADO link found in issue body.");
+//         return -1;
+//     }
     
-    return lastRef[1];
-}
+//     return lastRef[1];
+// }
 
 // Update the GH issue body to include the AB# so that we link the Work Item to the Issue.
 // This should only get called when the issue is created.
