@@ -359,6 +359,8 @@ async function updateIssueBody(payload, adoId) {
 	let issueBody = payload.issue.body + "\r\n\r\nAB#" + adoId;
 
 	console.log("Adding 'AB#<id>' link to the issue body");
+	console.log(payload);
+	console.log(issueBody);
 	try {
 		var result = await octokit.issues.update({
 			owner: payload.repository.owner.login,
@@ -370,6 +372,7 @@ async function updateIssueBody(payload, adoId) {
 		return result;
 	} catch (error) {
 		console.log("Error: failed to update issue");
+		console.log(error)
 		core.setFailed(error);
 	}
 
