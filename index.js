@@ -82,50 +82,51 @@ async function handleLabeled(payload) {
 		console.log(`Action was 'labeled' but label was not in filter = ${core.getInput('label')}. Nothing to do.`);
 		return;
 	}
+	updateIssueBody(payload, "1234");
 
 	// Look for existing ADO id in issue body
-	let adoIdFromIssue = await findAdoIdFromIssue(payload.issue.body);
-	if (adoIdFromIssue != -1) {
-		console.log("Found existing ADO id in GitHub issue body: " + adoIdFromIssue);
-		console.log("Won't try to create a new item.");
-		return;
-	}
+	// let adoIdFromIssue = await findAdoIdFromIssue(payload.issue.body);
+	// if (adoIdFromIssue != -1) {
+	// 	console.log("Found existing ADO id in GitHub issue body: " + adoIdFromIssue);
+	// 	console.log("Won't try to create a new item.");
+	// 	return;
+	// }
 
-	try {
-		// Search for an existing ADO item with "GitHub #<id>" in the title
-		console.log("Check to see if work item already exists");
-		let adoId = await findAdoIdFromAdo(payload.issue.number);
-		if (adoId === -1) {
-			console.log("Could not find existing ADO workitem, creating one now");
-		} else {
-			console.log("Found existing ADO workitem: " + adoId + ". No need to create a new one");
+	// try {
+	// 	// Search for an existing ADO item with "GitHub #<id>" in the title
+	// 	console.log("Check to see if work item already exists");
+	// 	let adoId = await findAdoIdFromAdo(payload.issue.number);
+	// 	if (adoId === -1) {
+	// 		console.log("Could not find existing ADO workitem, creating one now");
+	// 	} else {
+	// 		console.log("Found existing ADO workitem: " + adoId + ". No need to create a new one");
 			
-			// Update the GitHub issue body with the workitem id if it wasn't already there
-			if (adoIdFromIssue == -1) {
-				updateIssueBody(payload, adoId);
-			}
-			return;
-		}
+	// 		// Update the GitHub issue body with the workitem id if it wasn't already there
+	// 		if (adoIdFromIssue == -1) {
+	// 			updateIssueBody(payload, adoId);
+	// 		}
+	// 		return;
+	// 	}
 
-		// Try to create a new ADO item
-		let workItem = await createAdoWorkItem(payload);
+	// 	// Try to create a new ADO item
+	// 	let workItem = await createAdoWorkItem(payload);
 
-		// Success!
-		if (workItem != null || workItem != undefined) {
-			console.log(`Work item successfully created or found: ${workItem.id}`);
+	// 	// Success!
+	// 	if (workItem != null || workItem != undefined) {
+	// 		console.log(`Work item successfully created or found: ${workItem.id}`);
 
-			// Update the GitHub issue body with the workitem id
-			if (adoIdFromIssue == -1) {
-				updateIssueBody(payload, workItem.id);
-			}
+	// 		// Update the GitHub issue body with the workitem id
+	// 		if (adoIdFromIssue == -1) {
+	// 			updateIssueBody(payload, workItem.id);
+	// 		}
 
-			// Set output message
-			core.setOutput(`id`, `${workItem.id}`);
-		}
-	} catch (error) {
-		console.log("Error: " + error);
-		core.setFailed();
-	}
+	// 		// Set output message
+	// 		core.setOutput(`id`, `${workItem.id}`);
+	// 	}
+	// } catch (error) {
+	// 	console.log("Error: " + error);
+	// 	core.setFailed();
+	// }
 }
 
 function formatTitle(githubIssue) {
